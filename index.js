@@ -192,14 +192,32 @@ const updateUI = acc => {
   calcDisplaySummary(acc);
 };
 
-let currentAccount;
+let currentAccount, timer;
 
-//Faking login account
-currentAccount = account2;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
+// //Faking login account
+// currentAccount = account2;
+// updateUI(currentAccount);
+// containerApp.style.opacity = 100;
 
-//ExperimentingAPI
+const startLogOutTimer = () => {
+  const tick = function () {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
+    const sec = String(time % 60).padStart(2, 0);
+    labelTimer.textContent = `${min}:${sec}`;
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = 'Log in to get started!';
+      containerApp.style.opacity = 0;
+    }
+    time--;
+  };
+  //set time to 5 minutes
+  let time = 300;
+  tick();
+  //call the timer every second
+  const timer = setInterval(tick, 1000);
+  return timer;
+};
 
 //Event Handlers
 btnLogin.addEventListener('click', function (e) {
@@ -211,7 +229,7 @@ btnLogin.addEventListener('click', function (e) {
   // console.log(currentAccount);
   if (currentAccount?.pin === Number(inputLoginPin.value)) {
     // Display UI and Message
-    containerApp.classList.remove('hidden');
+    containerApp.style.opacity = 100;
     labelWelcome.textContent = `Welcome Back, ${
       currentAccount.owner.split(' ')[0]
     }`;
@@ -241,8 +259,13 @@ btnLogin.addEventListener('click', function (e) {
     //clear the field
     inputLoginUsername.value = '';
     inputLoginPin.value = '';
+
     //Update the UI
     updateUI(currentAccount);
+
+    //startLogOutTimer
+    if (timer) clearInterval(timer);
+    timer = startLogOutTimer();
   } else {
     console.log('Failed!');
   }
@@ -286,15 +309,16 @@ btnLoan.addEventListener('click', function (e) {
     loanAmount > 0 &&
     currentAccount.movements.some(mov => mov >= loanAmount * 0.1)
   ) {
-    //Add the loan to the account
-    currentAccount.movements.push(loanAmount);
+    setTimeout(function () {
+      //Add the loan to the account
+      currentAccount.movements.push(loanAmount);
 
-    //add load date
+      //add load date
 
-    currentAccount.movementsDates.push(new Date().toISOString());
-    //update the UI
-    updateUI(currentAccount);
-
+      currentAccount.movementsDates.push(new Date().toISOString());
+      //update the UI
+      updateUI(currentAccount);
+    }, 2500);
     //Clean the field
     inputLoanAmount.value = '';
   }
